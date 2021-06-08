@@ -1,3 +1,0 @@
-@{
-    Address = "http://PoshCode.org"
-}
