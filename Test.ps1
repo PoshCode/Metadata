@@ -23,7 +23,7 @@ Write-Host "SemVer: $SemVer"
 try {
     if (Test-Path $OutputDirectory) {
         # Get the part of the output path that we need to add to the PSModulePath
-        if ($OutputDirectory -match "Configuration$") {
+        if ($OutputDirectory -match "Metadata$") {
             $OutputDirectory = Split-Path $OutputDirectory
         }
         if (-not (@($Env:PSModulePath.Split([IO.Path]::PathSeparator)) -contains $OutputDirectory)) {
@@ -41,12 +41,12 @@ try {
         $Env:PSModulePath = $OutputDirectory + [IO.Path]::PathSeparator +
                             $Env:PSModulePath
 
-        Write-Host "Testing Configuration $SemVer"
+        Write-Host "Testing Metadata $SemVer"
         $SemVer = ($SemVer -split "-")[0]
 
         # We need to make sure we load the right version of the module
-        Remove-Module Configuration -ErrorAction SilentlyContinue -Force
-        Import-Module Configuration -RequiredVersion $SemVer
+        Remove-Module Metadata -ErrorAction SilentlyContinue -Force
+        Import-Module Metadata -RequiredVersion $SemVer
         Invoke-Gherkin $Specs
     }
 
