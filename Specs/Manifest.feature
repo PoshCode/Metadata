@@ -3,9 +3,7 @@ Feature: Manifest Read and Write
     I want to easily edit my manifest as part of my build script
 
     Background:
-        Given the metadata module is imported with testing paths:
-        | Enterprise                | User                | Machine                |
-        | TestDrive:/EnterprisePath | TestDrive:/UserPath | TestDrive:/MachinePath |
+        Given the metadata module is imported
 
     @Modules @Import
     Scenario: Read ModuleVersion from a module manifest by default

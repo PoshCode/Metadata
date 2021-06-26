@@ -4,9 +4,7 @@ Feature: Serialize Hashtables or Custom Objects
     Needs to serialize a preferences object in a user-editable format we call metadata
 
     Background:
-        Given the metadata module is imported with testing paths:
-        | Enterprise                | User                | Machine                |
-        | TestDrive:/EnterprisePath | TestDrive:/UserPath | TestDrive:/MachinePath |
+        Given the metadata module is imported
 
     @Serialization
     Scenario: Serialize a hashtable to string

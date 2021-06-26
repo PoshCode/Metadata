@@ -83,51 +83,6 @@ Given 'the Metadata module is imported on Linux:' {
     }
 }
 
-Given 'the Metadata module is imported with testing paths on Linux:' {
-    param($Table)
-    $ModuleBase = GetModuleBase
-
-    Copy-Item $ModuleBase/Metadata.psd1 -Destination $ModuleBase/Metadata.psd1.backup
-
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value $Table.Machine
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value $Table.Enterprise
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value $Table.User
-
-    Remove-Module "Metadata" -ErrorAction Ignore -Force
-    if (!(Test-Path Variable:IsLinux -ErrorAction SilentlyContinue)) {
-        $Global:IsLinux = $True
-        Import-Module $ModuleBase/Metadata.psd1 -Scope Global
-        Remove-Variable IsLinux
-    } elseif (!$IsLinux) {
-        Set-Variable IsLinux $True -Force -Option ReadOnly, AllScope -Scope Global
-        Import-Module $ModuleBase/Metadata.psd1 -Scope Global
-        Set-Variable IsLinux $False -Force -Option ReadOnly, AllScope -Scope Global
-    }
-
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value ""
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value ""
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value ""
-
-}
-
-Given 'the Metadata module is imported with testing paths:' {
-    param($Table)
-    $ModuleBase = GetModuleBase
-
-    Copy-Item $ModuleBase/Metadata.psd1 -Destination $ModuleBase/Metadata.psd1.backup
-
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value $Table.Machine
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value $Table.Enterprise
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value $Table.User
-
-    Remove-Module "Metadata" -ErrorAction Ignore -Force
-    Import-Module $ModuleBase/Metadata.psd1 -Scope Global
-
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value ""
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value ""
-    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value ""
-}
-
 Given 'the Metadata module is imported with a URL converter' {
     param($Table)
     $ModuleBase = GetModuleBase

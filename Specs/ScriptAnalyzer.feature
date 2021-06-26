@@ -5,7 +5,7 @@ Feature: Passes Script Analyzer
 
     Scenario: ScriptAnalyzer on the compiled module output
         Given the Metadata module is imported
-        When we run ScriptAnalyzer on 'C:\Users\Jaykul\Projects\Modules\Metadata\1.4.4' with 'C:\Users\Jaykul\Projects\Modules\Metadata\PSScriptAnalyzerSettings.psd1'
+        When we run ScriptAnalyzer on 'C:\Users\Jaykul\Projects\Modules\Metadata\1.4.14' with 'C:\Users\Jaykul\Projects\Modules\Metadata\PSScriptAnalyzerSettings.psd1'
 
         Then it passes the ScriptAnalyzer rule PSAlignAssignmentStatement 
         Then it passes the ScriptAnalyzer rule PSAvoidUsingCmdletAliases 
