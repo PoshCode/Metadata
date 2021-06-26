@@ -148,46 +148,49 @@ function ConvertFrom-Metadata {
 
         # Write-Debug "ConvertFrom-Metadata: Searching $($Tokens.Count) variables for: $($ValidVariables -join ', '))"
         # Work around PowerShell rules about magic variables
-        # Change all the "ValidVariables" to use names like __ModuleBuilder__OriginalName__
+        # Change all the "ValidVariables" to use names like __Metadata__OriginalName__
         # Later, we'll try to make sure these are all set!
         if (($UsedVariables = $Tokens | Where-Object { ("Variable" -eq $_.Kind) -and ($_.Name -in $ValidVariables) })) {
             # Write-Debug "ConvertFrom-Metadata: Replacing $($UsedVariables.Name -join ', ')"
-            if (($scriptroots = @( $UsedVariables | ForEach-Object { $_.Extent | Add-Member NoteProperty Name $_.Name -PassThru } ))) {
+            if (($extents = @( $UsedVariables | ForEach-Object { $_.Extent | Add-Member NoteProperty Name $_.Name -PassThru } ))) {
                 $ScriptContent = $Ast.ToString()
                 # Write-Debug "ConvertFrom-Metadata: Replacing $($UsedVariables.Count) variables in metadata: $ScriptContent"
-                for ($r = $scriptroots.count - 1; $r -ge 0; $r--) {
-                    $VariableExtent = $scriptroots[$r]
+                for ($r = $extents.count - 1; $r -ge 0; $r--) {
+                    $VariableExtent = $extents[$r]
                     $VariableName = if ($VariableExtent.Name -eq "PSScriptRoot") {
-                        '${__ModuleBuilder__ScriptRoot__}'
+                        '${__Metadata__ScriptRoot__}'
                     } else {
-                        '${__ModuleBuilder__' + $VariableExtent.Name + '__}'
+                        '${__Metadata__' + $VariableExtent.Name + '__}'
                     }
-                    $ScriptContent = $ScriptContent.Remove($VariableExtent.StartOffset, ($VariableExtent.EndOffset - $VariableExtent.StartOffset)
-                                                  ).Insert($VariableExtent.StartOffset, $VariableName)
+                    $ScriptContent = $ScriptContent.Remove( $VariableExtent.StartOffset,
+                                                            ($VariableExtent.EndOffset - $VariableExtent.StartOffset)
+                                                            ).Insert($VariableExtent.StartOffset, $VariableName)
                 }
             }
+            Write-Debug "ConvertFrom-Metadata: Replaced $($UsedVariables.Name -join ' and ') in metadata: $ScriptContent"
+            $AST = [System.Management.Automation.Language.Parser]::ParseInput($ScriptContent, [ref]$Tokens, [ref]$ParseErrors)
         }
-
-        # Write-Debug "ConvertFrom-Metadata: Replaced $($UsedVariables.Name -join ' and ') in metadata: $ScriptContent"
-        $AST = [System.Management.Automation.Language.Parser]::ParseInput($ScriptContent, [ref]$Tokens, [ref]$ParseErrors)
 
         $Script = $AST.GetScriptBlock()
         try {
-            [string[]]$PrivateVariables = $ValidVariables -replace "^.*$", '__ModuleBuilder__$0__'
-            # Write-Debug "ConvertFrom-Metadata: Validating metadata: $Script against $PrivateVariables"
+            [string[]]$PrivateVariables = $ValidVariables -replace "^.*$", '__Metadata__$0__'
+            Write-Debug "ConvertFrom-Metadata: Validating metadata: $Script against $PrivateVariables"
             $Script.CheckRestrictedLanguage( $ValidCommands, $PrivateVariables, $true )
         } catch {
             ThrowError -Exception $_.Exception.InnerException -ErrorId "Metadata Error" -Category "InvalidData" -TargetObject $Script
         }
 
-        # Set the __ModuleBuilder__ValidVariables__ in our scope but not for constant variables:
+        # Set the __Metadata__ValidVariables__ in our scope but not for constant variables:
         $ReplacementVariables = $ValidVariables | Where-Object { $_ -notin "PSCulture", "PSUICulture", "True", "False", "Null" }
         foreach ($name in $ReplacementVariables) {
-            if (!($Value = $PSVariable.GetValue($Name))) {
+            # We already read the script root from the calling scope ...
+            if ($Name -in "PSScriptRoot", "ScriptRoot", "PoshCodeModuleRoot") {
+                $Value = $ScriptRoot
+            } elseif (!($Value = $PSVariable.GetValue($Name))) {
                 $Value = "`${$Name}"
             }
-            # Write-Debug "ConvertFrom-Metadata: Setting __ModuleBuilder__${Name}__ = $Value"
-            Set-Variable "__ModuleBuilder__${Name}__" $Value
+            Write-Debug "ConvertFrom-Metadata: Setting __Metadata__${Name}__ = $Value"
+            Set-Variable "__Metadata__${Name}__" $Value
         }
 
         if ($Ordered -and (Test-PSVersion -gt "3.0")) {

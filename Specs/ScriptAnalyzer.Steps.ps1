@@ -48,7 +48,7 @@ Feature: Passes Script Analyzer
     This module should pass Invoke-ScriptAnalyzer with flying colors
 
     Scenario: ScriptAnalyzer on the compiled module output
-        Given the configuration module is imported
+        Given the Metadata module is imported
         When we run ScriptAnalyzer on '$Path' with '$Settings'
 $(  foreach ($Rule in $Rules.RuleName) {"
         Then it passes the ScriptAnalyzer rule $Rule"

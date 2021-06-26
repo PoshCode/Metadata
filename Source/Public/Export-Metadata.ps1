@@ -14,7 +14,7 @@ function Export-Metadata {
             $Configuration | Export-Metadata .\Configuration.psd1
 
             Export a configuration object (or hashtable) to the default Configuration.psd1 file for a module
-            The Configuration module uses Configuration.psd1 as it's default config file.
+            the metadata module uses Configuration.psd1 as it's default config file.
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")] # Because PSSCriptAnalyzer team refuses to listen to reason. See bugs:  #194 #283 #521 #608
     [CmdletBinding(SupportsShouldProcess)]

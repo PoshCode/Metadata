@@ -1,5 +1,5 @@
-#requires -Module Configuration
-#using module Configuration
+#requires -Module Metadata
+#using module Metadata
 
 $PSModuleAutoLoadingPreference = "None"
 # Fix IsLinux on Windows PowerShell 5.x
@@ -37,7 +37,7 @@ public class TestClass : Hashtable {
 '@
 
 InModuleScope Pester {
-    Import-Module Configuration
+    Import-Module Metadata
     class TestClass : Hashtable, IPsMetadataSerializable {
         [string]$Name
 
@@ -59,80 +59,80 @@ InModuleScope Pester {
 }
 
 function global:GetModuleBase {
-    $Module = Get-Module "Configuration" -ListAvailable |
+    $Module = Get-Module "Metadata" -ListAvailable |
         Sort-Object Version -Descending |
         Select-Object -First 1
 
-    Import-Module "$($Module.ModuleBase)/Configuration.psd1" -Scope Global
+    Import-Module "$($Module.ModuleBase)/Metadata.psd1" -Scope Global
 
     $Module.ModuleBase
 }
 
 
-Given 'the configuration module is imported on Linux:' {
+Given 'the Metadata module is imported on Linux:' {
     $ModuleBase = GetModuleBase
-    Remove-Module "Configuration" -ErrorAction Ignore -Force
+    Remove-Module "Metadata" -ErrorAction Ignore -Force
     if (!(Test-Path Variable:IsLinux -ErrorAction SilentlyContinue)){
         $Global:IsLinux = $True
-        Import-Module $ModuleBase/Configuration.psd1 -Scope Global
+        Import-Module $ModuleBase/Metadata.psd1 -Scope Global
         Remove-Variable IsLinux -Scope Global
     } elseif (!$IsLinux) {
         Set-Variable IsLinux $True -Force -Option ReadOnly, AllScope -Scope Global
-        Import-Module $ModuleBase/Configuration.psd1 -Scope Global
+        Import-Module $ModuleBase/Metadata.psd1 -Scope Global
         Set-Variable IsLinux $False -Force -Option ReadOnly, AllScope -Scope Global
     }
 }
 
-Given 'the configuration module is imported with testing paths on Linux:' {
+Given 'the Metadata module is imported with testing paths on Linux:' {
     param($Table)
     $ModuleBase = GetModuleBase
 
-    Copy-Item $ModuleBase/Configuration.psd1 -Destination $ModuleBase/Configuration.psd1.backup
+    Copy-Item $ModuleBase/Metadata.psd1 -Destination $ModuleBase/Metadata.psd1.backup
 
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value $Table.Machine
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value $Table.Enterprise
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value $Table.User
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value $Table.Machine
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value $Table.Enterprise
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value $Table.User
 
-    Remove-Module "Configuration" -ErrorAction Ignore -Force
+    Remove-Module "Metadata" -ErrorAction Ignore -Force
     if (!(Test-Path Variable:IsLinux -ErrorAction SilentlyContinue)) {
         $Global:IsLinux = $True
-        Import-Module $ModuleBase/Configuration.psd1 -Scope Global
+        Import-Module $ModuleBase/Metadata.psd1 -Scope Global
         Remove-Variable IsLinux
     } elseif (!$IsLinux) {
         Set-Variable IsLinux $True -Force -Option ReadOnly, AllScope -Scope Global
-        Import-Module $ModuleBase/Configuration.psd1 -Scope Global
+        Import-Module $ModuleBase/Metadata.psd1 -Scope Global
         Set-Variable IsLinux $False -Force -Option ReadOnly, AllScope -Scope Global
     }
 
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value ""
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value ""
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value ""
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value ""
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value ""
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value ""
 
 }
 
-Given 'the configuration module is imported with testing paths:' {
+Given 'the Metadata module is imported with testing paths:' {
     param($Table)
     $ModuleBase = GetModuleBase
 
-    Copy-Item $ModuleBase/Configuration.psd1 -Destination $ModuleBase/Configuration.psd1.backup
+    Copy-Item $ModuleBase/Metadata.psd1 -Destination $ModuleBase/Metadata.psd1.backup
 
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value $Table.Machine
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value $Table.Enterprise
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value $Table.User
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value $Table.Machine
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value $Table.Enterprise
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value $Table.User
 
-    Remove-Module "Configuration" -ErrorAction Ignore -Force
-    Import-Module $ModuleBase/Configuration.psd1 -Scope Global
+    Remove-Module "Metadata" -ErrorAction Ignore -Force
+    Import-Module $ModuleBase/Metadata.psd1 -Scope Global
 
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value ""
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value ""
-    Update-Metadata -Path $ModuleBase/Configuration.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value ""
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.MachineData' -Value ""
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.EnterpriseData' -Value ""
+    Update-Metadata -Path $ModuleBase/Metadata.psd1 -PropertyName 'PrivateData.PathOverride.UserData' -Value ""
 }
 
-Given 'the configuration module is imported with a URL converter' {
+Given 'the Metadata module is imported with a URL converter' {
     param($Table)
     $ModuleBase = GetModuleBase
-    Remove-Module "Configuration" -ErrorAction Ignore -Force
-    Import-Module $ModuleBase/Configuration.psd1 -Args @{
+    Remove-Module "Metadata" -ErrorAction Ignore -Force
+    Import-Module $ModuleBase/Metadata.psd1 -Args @{
                 [Uri] = { "Uri '$_' " }
                 "Uri" = {
                     param([string]$Value)
@@ -141,20 +141,19 @@ Given 'the configuration module is imported with a URL converter' {
             } -Scope Global
 }
 
-Given 'the configuration module is imported' {
+Given 'the Metadata module is imported' {
     param($Table)
     $ModuleBase = GetModuleBase
-    Remove-Module "Configuration" -ErrorAction Ignore -Force
-    Import-Module $ModuleBase/Configuration.psd1 -Scope Global
+    Remove-Module "Metadata" -ErrorAction Ignore -Force
+    Import-Module $ModuleBase/Metadata.psd1 -Scope Global
 }
 
 Given 'the manifest module is imported' {
     param($Table)
     $ModuleBase = GetModuleBase
-    Remove-Module "Configuration", Manifest
+    Remove-Module "Metadata", Manifest
     Import-Module $ModuleBase/Manifest.psm1 -Scope Global
 }
-
 Given "a module with(?:\s+\w+ name '(?<name>.+?)'|\s+\w+ the company '(?<company>.+?)'|\s+\w+ the author '(?<author>.+?)')+" {
     param($name, $Company = "", $Author = "")
 
@@ -163,7 +162,7 @@ Given "a module with(?:\s+\w+ name '(?<name>.+?)'|\s+\w+ the company '(?<company
     Remove-Item $ModulePath -Recurse -ErrorAction Ignore
 
     if(Test-Path $ModulePath -PathType Leaf) {
-        throw "Cannot create folder for Configuration because there's a file in the way at '$ModulePath'"
+        throw "Cannot create folder for Metadata because there's a file in the way at '$ModulePath'"
     }
     if(!(Test-Path $ModulePath -PathType Container)) {
         $null = New-Item $ModulePath -Type Directory -Force
@@ -195,6 +194,7 @@ Given "a module with(?:\s+\w+ name '(?<name>.+?)'|\s+\w+ the company '(?<company
 
     Import-Module $ModulePath/${Name}.psd1
 }
+<# Configuration Path Tests
 
 Then "the user configuration path at load time should (\w+) (.+)$" {
     param($Comparator, $Path)
@@ -279,6 +279,7 @@ Given "a script with the name '(?<File>.+)' that calls Get-ConfigurationPath (?:
     Set-Content "TestDrive:/${File}.ps1" "Get-ConfigurationPath -Name $Name -Author $Author"
     $ScriptName = $File
 }
+#>
 
 Then "the script should throw an exception$" {
     { $LocalStoragePath = iex "TestDrive:/${ScriptName}.ps1" } | Should throw
@@ -289,7 +290,7 @@ When "the module's storage path should end with a version number if one is passe
     (GetStoragePath -Version "4.0") -replace "\\", "/" | Should Match "/4.0$"
 }
 
-When "a settings hashtable" {
+When "a hashtable" {
     param($hashtable)
     $Settings = iex "[ordered]$hashtable"
 }
@@ -355,11 +356,11 @@ Given "a (?:settings file|module manifest) named (\S+)(?:(?: in the (?<Scope>\S+
     Set-Content $SettingsFile -Value $hashtable
 }
 
-Then "the settings object MyPath should match the file's path" {
+Then "the output's MyPath should match the file's path" {
     $Settings.MyPath | Convert-Path | Should Be (Convert-Path ${SettingsFile})
 }
 
-When "a settings hashtable with an? (.+) in it" {
+When "a hashtable with an? (.+) in it" {
     param($type)
     $Settings = @{
         UserName = $Env:UserName
@@ -496,10 +497,10 @@ When "trying to import the file to an object should throw(.*)" {
 When "the string version should (\w+)\s*(.*)?" {
     param($operator, $data)
     # Normalize line endings, because the module does:
-    $meta = ($SettingsMetadata -replace "\r?\n","`n")
+    $Metadata = ($SettingsMetadata -replace "\r?\n","`n")
     $data = $data.trim('"''')  -replace "\r?\n","`n"
     # And then actually test it
-    $meta | Should $operator $data
+    $Metadata | Should $operator $data
 }
 
 When "the settings file should (\w+)\s*(.*)?" {
@@ -526,7 +527,7 @@ Given "the settings file does not exist" {
     }
 }
 
-Given "the configuration module exports IPsMetadataSerializable" {
+Given "the metadata module exports IPsMetadataSerializable" {
     "IPsMetadataSerializable" -as [Type] | Should -Not -BeNullOrEmpty
     [IPsMetadataSerializable].IsInterface | Should -Be $true
 }
@@ -588,17 +589,17 @@ When "we add a converter with a number as a key" {
     }
 }
 
-Then "the (?:settings|output) object should be of type (.*)" {
+Then "the output object should be of type (.*)" {
     param([Type]$Type)
     $Settings | Should BeOfType $Type
 }
 
-Then "the (?:settings|output) object should have (.*) in the PSTypeNames" {
+Then "the output object should have (.*) in the PSTypeNames" {
     param([string]$Type)
     $Settings.PSTypeNames -eq $Type | Should Be $Type
 }
 
-Then "the (?:settings|output) object's (.*) should (be of type|be) (.*)" {
+Then "the (?:settings|output)'s (.*) should (be of type|be) (.*)" {
     param([String]$Parameter, [String]$operator, $Expected)
     $Value = $Settings
     Set-StrictMode -Off

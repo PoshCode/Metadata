@@ -32,8 +32,7 @@ try {
         }
     }
 
-    $Specs = Join-Path $PSScriptRoot Specs
-
+    $Specs = @{ Path = Join-Path $PSScriptRoot Specs }
     # Just to make sure everything is kosher, run tests in a clean session
     $PSModulePath = $Env:PSModulePath
     Invoke-Command {
@@ -44,10 +43,10 @@ try {
         Write-Host "Testing Metadata $SemVer"
         $SemVer = ($SemVer -split "-")[0]
 
-        # We need to make sure we load the right version of the module
-        Remove-Module Metadata -ErrorAction SilentlyContinue -Force
-        Import-Module Metadata -RequiredVersion $SemVer
-        Invoke-Gherkin $Specs
+        # We need to make sure we have loaded ONLY the right version of the module
+        Get-Module Metadata -All | Remove-Module -ErrorAction SilentlyContinue -Force
+        $Specs["CodeCoverage"] = Import-Module Metadata -RequiredVersion $SemVer -Passthru | Select-Object -Expand Path
+        Invoke-Gherkin @Specs
     }
 
 } finally {

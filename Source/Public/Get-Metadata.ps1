@@ -56,7 +56,7 @@ function Get-Metadata {
         if ($KeyValue.Count -gt 1) {
             $SingleKey = @($KeyValue | Where-Object { $_.HashKeyPath -eq $PropertyName })
 
-            if ($SingleKey.Count -gt 1) {
+            if ($SingleKey.Count -ne 1) {
                 WriteError -ExceptionType System.Reflection.AmbiguousMatchException `
                     -Message ("Found more than one '$PropertyName' in $Path. Please specify a dotted path instead. Matching paths include: '{0}'" -f ($KeyValue.HashKeyPath -join "', '")) `
                     -ErrorId "AmbiguousMatch,Metadata\Get-Metadata" `
@@ -78,7 +78,7 @@ function Get-Metadata {
             if ($KeyValue.SafeGetValue) {
                 $KeyValue.SafeGetValue()
             } else {
-                # Otherwise, this workd for simple values:
+                # Otherwise, this worked for simple values:
                 $Expression = $KeyValue.GetPureExpression()
                 if ($Expression.Value) {
                     $Expression.Value

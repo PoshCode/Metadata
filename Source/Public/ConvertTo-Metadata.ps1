@@ -84,6 +84,9 @@ function ConvertTo-Metadata {
                     }) -split "`n" -join "`n$t")
         } elseif ($InputObject -is [System.Collections.IEnumerable]) {
             "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ","))"
+        } elseif($InputObject -is [System.Management.Automation.ScriptBlock]) {
+            # Escape single-quotes by doubling them:
+            "(ScriptBlock '{0}')" -f ("$_" -replace "'", "''")
         } elseif ($InputObject.GetType().FullName -eq 'System.Management.Automation.PSCustomObject') {
             # NOTE: we can't put [ordered] here because we need support for PS v2, but it's ok, because we put it in at parse-time
             $(if ($AsHashtable) {

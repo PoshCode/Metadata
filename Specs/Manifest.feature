@@ -3,7 +3,7 @@ Feature: Manifest Read and Write
     I want to easily edit my manifest as part of my build script
 
     Background:
-        Given the configuration module is imported with testing paths:
+        Given the metadata module is imported with testing paths:
         | Enterprise                | User                | Machine                |
         | TestDrive:/EnterprisePath | TestDrive:/UserPath | TestDrive:/MachinePath |
 
@@ -84,6 +84,33 @@ Feature: Manifest Read and Write
         When I call Get-Metadata ModuleName.psd1 ReleaseNotes
         Then the result should be Nothing has changed
 
+
+    Scenario: Read an ambiguously named property from a module manifest
+        Given a module with the name 'ModuleName'
+        And a module manifest named ModuleName.psd1
+            """
+            @{
+                # Script module or binary module file associated with this manifest.
+                ModuleToProcess = './Configuration.psm1'
+
+                # Version number of this module.
+                ModuleVersion = '0.4'
+
+                PrivateData = @{
+                    ModuleToProcess = "Test Value"
+                    InnerDuplicate = "Test Value"
+                    PSData = @{
+                        InnerDuplicate = "Test Value"
+                        ModuleToProcess = "Nothing has changed"
+                    }
+                }
+            }
+            """
+        When I call Get-Metadata ModuleName.psd1 ModuleToProcess
+        Then the result should be ./Configuration.psm1
+        Given we expect an error in the Metadata module
+        When I call Get-Metadata ModuleName.psd1 InnerDuplicate
+        Then the error is logged exactly 1 time
 
     Scenario: Attempt to read a non-existent value
         Given a module with the name 'ModuleName'

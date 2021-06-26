@@ -4,13 +4,13 @@ Feature: Serialize Hashtables or Custom Objects
     Needs to serialize a preferences object in a user-editable format we call metadata
 
     Background:
-        Given the configuration module is imported with testing paths:
+        Given the metadata module is imported with testing paths:
         | Enterprise                | User                | Machine                |
         | TestDrive:/EnterprisePath | TestDrive:/UserPath | TestDrive:/MachinePath |
 
     @Serialization
     Scenario: Serialize a hashtable to string
-        Given a settings hashtable
+        Given a hashtable
             """
             @{ UserName = "Joel"; BackgroundColor = "Black"}
             """
@@ -25,7 +25,7 @@ Feature: Serialize Hashtables or Custom Objects
 
     @Serialization @ConsoleColor
     Scenario: Serialize a ConsoleColor to string
-        Given a settings hashtable
+        Given a hashtable
             """
             @{ UserName = "Joel"; BackgroundColor = [ConsoleColor]::Black }
             """
@@ -40,51 +40,51 @@ Feature: Serialize Hashtables or Custom Objects
 
     @Serialization
     Scenario: Should be able to serialize core types:
-        Given a settings hashtable with a String in it
+        Given a hashtable with a String in it
         When we convert the settings to metadata
         Then the string version should match 'TestCase = ([''"])[^\1]+\1'
 
-        Given a settings hashtable with a Boolean in it
+        Given a hashtable with a Boolean in it
         When we convert the settings to metadata
         Then the string version should match 'TestCase = \`$(True|False)'
 
-        Given a settings hashtable with a NULL in it
+        Given a hashtable with a NULL in it
         When we convert the settings to metadata
         Then the string version should match 'TestCase = ""'
 
-        Given a settings hashtable with a Number in it
+        Given a hashtable with a Number in it
         When we convert the settings to metadata
         Then the string version should match 'TestCase = \d+'
 
     @Serialization
     Scenario: Should be able to serialize a array
-        Given a settings hashtable with an Array in it
+        Given a hashtable with an Array in it
         When we convert the settings to metadata
         Then the string version should match 'TestCase = ([^,]*,)+[^,]*'
 
     @Serialization
     Scenario: Should be able to serialize nested hashtables
-        Given a settings hashtable with a hashtable in it
+        Given a hashtable with a hashtable in it
         When we convert the settings to metadata
         Then the string version should match 'TestCase = @{'
 
 
     @Serialization @SecureString @PSCredential @CRYPT32
     Scenario Outline: Should be able to serialize PSCredential
-        Given a settings hashtable with a PSCredential in it
+        Given a hashtable with a PSCredential in it
         When we convert the settings to metadata
         Then the string version should match "TestCase = \(?PSCredential"
 
     @Serialization @SecureString @CRYPT32
     Scenario Outline: Should be able to serialize SecureStrings
-        Given a settings hashtable with a SecureString in it
+        Given a hashtable with a SecureString in it
         When we convert the settings to metadata
         Then the string version should match "TestCase = \(?ConvertTo-SecureString [a-z0-9]+"
 
 
     @Serialization @CRYPT32
     Scenario Outline: Should support a few additional types
-        Given a settings hashtable with a <type> in it
+        Given a hashtable with a <type> in it
         When we convert the settings to metadata
         Then the string version should match "TestCase = \(?<type> "
 
@@ -111,11 +111,11 @@ Feature: Serialize Hashtables or Custom Objects
             """
         When we export to a settings file named Configuration.psd1
         And we import the file to an object
-        Then the settings object should have Whatever.User in the PSTypeNames
+        Then the output object should have Whatever.User in the PSTypeNames
 
     @Serialization @Enum
     Scenario: Unsupported types should be serialized as strings
-        Given a settings hashtable with an Enum in it
+        Given a hashtable with an Enum in it
         Then we expect a warning in the Metadata module
         When we convert the settings to metadata
         And the warning is logged
@@ -129,7 +129,7 @@ Feature: Serialize Hashtables or Custom Objects
 
     @Serialization @Uri @Converter
     Scenario: Developers should be able to add support for other types
-        Given a settings hashtable with a Uri in it
+        Given a hashtable with a Uri in it
         When we add a converter for Uri types
         And we convert the settings to metadata
         Then the string version should match "TestCase = \(?Uri '.*'"
@@ -137,7 +137,7 @@ Feature: Serialize Hashtables or Custom Objects
 
     @Serialization @File
     Scenario: Developers should be able to export straight to file
-        Given a settings hashtable
+        Given a hashtable
             """
             @{
               UserName = 'Joel'
@@ -155,7 +155,7 @@ Feature: Serialize Hashtables or Custom Objects
 
     @Deserialization @Uri @Converter
     Scenario: I should be able to import serialized data
-        Given a settings hashtable
+        Given a hashtable
             """
             @{
               UserName = 'Joel'
@@ -164,19 +164,19 @@ Feature: Serialize Hashtables or Custom Objects
               Homepage = [Uri]"http://HuddledMasses.org"
             }
             """
-        Then the settings object's Homepage should be of type Uri
+        Then the output's Homepage should be of type Uri
         And we add a converter for Uri types
         And we convert the settings to metadata
         When we convert the metadata to an object
-        Then the settings object should be of type hashtable
-        Then the settings object's UserName should be of type String
-        Then the settings object's Age should be of type Int32
-        Then the settings object's LastUpdated should be of type DateTime
-        Then the settings object's Homepage should be of type Uri
+        Then the output object should be of type hashtable
+        Then the output's UserName should be of type String
+        Then the output's Age should be of type Int32
+        Then the output's LastUpdated should be of type DateTime
+        Then the output's Homepage should be of type Uri
 
     @DeSerialization @SecureString @PSCredential @CRYPT32
     Scenario Outline: I should be able to import serialized credentials and secure strings
-        Given a settings hashtable
+        Given a hashtable
             """
             @{
               Credential = [PSCredential]::new("UserName",(ConvertTo-SecureString Password -AsPlainText -Force))
@@ -187,19 +187,19 @@ Feature: Serialize Hashtables or Custom Objects
         Then the string version should match "Credential = \(?PSCredential"
         And the string version should match "Password = \(?ConvertTo-SecureString [\"a-z0-9]*"
         When we convert the metadata to an object
-        Then the settings object should be of type hashtable
-        Then the settings object's Credential should be of type PSCredential
-        Then the settings object's Password should be of type SecureString
+        Then the output object should be of type hashtable
+        Then the output's Credential should be of type PSCredential
+        Then the output's Password should be of type SecureString
 
     @Serialization @SecureString @CRYPT32
     Scenario Outline: Should be able to serialize SecureStrings
-        Given a settings hashtable with a SecureString in it
+        Given a hashtable with a SecureString in it
         When we convert the settings to metadata
         Then the string version should match "TestCase = \(?ConvertTo-SecureString [a-z0-9]+"
 
     @Deserialization @Uri @Converter
     Scenario: I should be able to import serialized data even in PowerShell 2
-        Given a settings hashtable
+        Given a hashtable
             """
             @{
               UserName = New-Object PSObject -Property @{ FirstName = 'Joel'; LastName = 'Bennett' }
@@ -213,17 +213,17 @@ Feature: Serialize Hashtables or Custom Objects
         And we add a converter for Uri types
         And we convert the settings to metadata
         When we convert the metadata to an object
-        Then the settings object should be of type hashtable
-        And the settings object's UserName should be of type PSObject
-        And the settings object's Age should be of type String
-        And the settings object's LastUpdated should be of type DateTimeOffset
-        And the settings object's GUID should be of type GUID
-        And the settings object's Color should be of type ConsoleColor
+        Then the output object should be of type hashtable
+        And the output's UserName should be of type PSObject
+        And the output's Age should be of type String
+        And the output's LastUpdated should be of type DateTimeOffset
+        And the output's GUID should be of type GUID
+        And the output's Color should be of type ConsoleColor
 
     @Deserialization @Uri @Converter
     Scenario: I should be able to add converters at import time
-        Given the configuration module is imported with a URL converter
-        And a settings hashtable
+        Given the metadata module is imported with a URL converter
+        And a hashtable
             """
             @{
               UserName = 'Joel'
@@ -231,17 +231,17 @@ Feature: Serialize Hashtables or Custom Objects
               Homepage = [Uri]"http://HuddledMasses.org"
             }
             """
-        Then the settings object's Homepage should be of type Uri
+        Then the output's Homepage should be of type Uri
         And we convert the settings to metadata
         Then the string version should match
             """
               Homepage = \(?Uri 'http://HuddledMasses.org/'
             """
         When we convert the metadata to an object
-        Then the settings object should be of type hashtable
-        And the settings object's UserName should be of type String
-        And the settings object's Age should be of type Int32
-        And the settings object's Homepage should be of type Uri
+        Then the output object should be of type hashtable
+        And the output's UserName should be of type String
+        And the output's Age should be of type Int32
+        And the output's Homepage should be of type Uri
 
 
     @Deserialization @File
@@ -256,9 +256,9 @@ Feature: Serialize Hashtables or Custom Objects
             """
         And we fake version 2.0 in the Metadata module
         When we import the file to an object
-        Then the settings object should be of type hashtable
-        And the settings object's UserName should be of type String
-        And the settings object's Age should be of type Int32
+        Then the output object should be of type hashtable
+        And the output's UserName should be of type String
+        And the output's Age should be of type Int32
 
 
     @Deserialization @File
@@ -272,9 +272,9 @@ Feature: Serialize Hashtables or Custom Objects
             }
             """
         When we import the file to an object
-        Then the settings object should be of type hashtable
-        Then the settings object's UserName should be of type String
-        Then the settings object's Age should be of type Int32
+        Then the output object should be of type hashtable
+        Then the output's UserName should be of type String
+        Then the output's Age should be of type Int32
 
     @Deserialization @File
     Scenario: Imported metadata files should be able to use PSScriptRoot
@@ -287,9 +287,9 @@ Feature: Serialize Hashtables or Custom Objects
             """
         And we're using PowerShell 4 or higher in the Metadata module
         When we import the file to an object
-        Then the settings object should be of type hashtable
-        And the settings object's MyPath should be of type String
-        And the settings object MyPath should match the file's path
+        Then the output object should be of type hashtable
+        And the output's MyPath should be of type String
+        And the output's MyPath should match the file's path
 
 
     @Deserialization @File
@@ -329,9 +329,9 @@ Feature: Serialize Hashtables or Custom Objects
             }
             """
         When we import the folder path
-        Then the settings object should be of type hashtable
-        Then the settings object's UserName should be of type String
-        Then the settings object's Age should be of type Int32
+        Then the output object should be of type hashtable
+        Then the output's UserName should be of type String
+        Then the output's Age should be of type Int32
 
     @Serialization @Deserialization @File
     Scenario: Errors when you import missing files
@@ -343,7 +343,7 @@ Feature: Serialize Hashtables or Custom Objects
 
     @UpdateObject
     Scenario: Update A Hashtable
-       Given a settings hashtable
+       Given a hashtable
             """
             @{
               UserName = 'Joel'
@@ -357,11 +357,11 @@ Feature: Serialize Hashtables or Custom Objects
               Age = 42
             }
             """
-        Then the settings object's UserName should be Joel
-         And the settings object's Age should be 42
+        Then the output's UserName should be Joel
+         And the output's Age should be 42
 
     @UpdateObject
-    Scenario: Update an Object
+    Scenario: Update an Object with a hashtable
        Given a settings object
             """
             @{
@@ -378,13 +378,35 @@ Feature: Serialize Hashtables or Custom Objects
               Age = 42
             }
             """
-        Then the settings object should have User in the PSTypeNames
-         And the settings object's UserName should be Jaykul
-         And the settings object's Age should be 42
+        Then the output object should have User in the PSTypeNames
+         And the output's UserName should be Jaykul
+         And the output's Age should be 42
+
+    @UpdateObject
+    Scenario: Update an Object with an Object
+       Given a settings object
+            """
+            @{
+               PSTypeName = 'User'
+               FirstName = 'Joel'
+               LastName = 'Bennett'
+               UserName = 'Jaykul'
+               Homepage = [Uri]"http://HuddledMasses.org"
+            }
+            """
+        When we update the settings with
+            """
+            [PSCustomObject]@{
+              Age = 42
+            }
+            """
+        Then the output object should have User in the PSTypeNames
+         And the output's UserName should be Jaykul
+         And the output's Age should be 42
 
     @UpdateObject
     Scenario: Try to Update An Object With Nothing
-        Given a settings hashtable
+        Given a hashtable
             """
             @{
               UserName = 'Joel'
@@ -395,8 +417,8 @@ Feature: Serialize Hashtables or Custom Objects
         When we update the settings with
             """
             """
-        Then the settings object's UserName should be Joel
-        And the settings object's Age should be 41
+        Then the output's UserName should be Joel
+        And the output's Age should be 41
 
     @UpdateObject
     Scenario: Update a hashtable with important properties
@@ -418,9 +440,9 @@ Feature: Serialize Hashtables or Custom Objects
                 Age = 42
             }
             """
-        Then the settings object's UserName should be Jaykul
-        And the settings object's Age should be 42
-        And the settings object should have User in the PSTypeNames
+        Then the output's UserName should be Jaykul
+        And the output's Age should be 42
+        And the output object should have User in the PSTypeNames
 
 
     @Serialization @Deserialization @File
@@ -435,9 +457,9 @@ Feature: Serialize Hashtables or Custom Objects
             }
             """
         When we import the file with ordered
-        Then the settings object should be of type Collections.Specialized.OrderedDictionary
-        And the settings object's UserName should be of type String
-        And the settings object's Age should be of type Int32
+        Then the output object should be of type Collections.Specialized.OrderedDictionary
+        And the output's UserName should be of type String
+        And the output's Age should be of type Int32
         And Key 0 is UserName
         And Key 1 is Age
         And Key 2 is FullName
@@ -457,13 +479,13 @@ Feature: Serialize Hashtables or Custom Objects
             }
             """
         When we import the file with ordered
-        Then the settings object should be of type Collections.Specialized.OrderedDictionary
-        And the settings object's FullName should be of type Collections.Specialized.OrderedDictionary
+        Then the output object should be of type Collections.Specialized.OrderedDictionary
+        And the output's FullName should be of type Collections.Specialized.OrderedDictionary
 
     @Regression @Serialization
     Scenario: Arrays of custom types
-        Given the configuration module is imported with a URL converter
-        And a settings hashtable
+        Given the Metadata module is imported with a URL converter
+        And a hashtable
             """
             @{
               UserName = 'Joel'
@@ -477,19 +499,19 @@ Feature: Serialize Hashtables or Custom Objects
 
     @Serialization @ScriptBlock
     Scenario Outline: Should be able to serialize ScriptBlocks
-        Given a settings hashtable with a ScriptBlock in it
+        Given a hashtable with a ScriptBlock in it
         When we convert the settings to metadata
         Then the string version should match "TestCase = \(?ScriptBlock '"
 
     @Serialization
     Scenario Outline: Should serialize Switch statements as booleans
-        Given a settings hashtable with a SwitchParameter in it
+        Given a hashtable with a SwitchParameter in it
         When we convert the settings to metadata
         Then the string version should match "TestCase = \`$True"
 
     @Serialization
     Scenario: Has an IPsMetadataSerializable Interface
-        Given the configuration module exports IPsMetadataSerializable
+        Given the metadata module exports IPsMetadataSerializable
         And a TestClass that implements IPsMetadataSerializable
         And a settings file named Configuration.psd1
             """
@@ -503,10 +525,10 @@ Feature: Serialize Hashtables or Custom Objects
             "
             """
         When we import the file to an object
-        Then the settings object should be of type TestClass
-        And the settings object's User should be Jaykul
-        And the settings object's Name should be Joel
-        And the settings object's Keys should be User
+        Then the output object should be of type TestClass
+        And the output's User should be Jaykul
+        And the output's Name should be Joel
+        And the output's Keys should be User
 
     @Serialization
     Scenario: Allows specifying a list of allowed variables
@@ -521,6 +543,6 @@ Feature: Serialize Hashtables or Custom Objects
         And we define FullName = Joel Bennett
         And we define Env:UserName = Jaykul
         When we import the file allowing variables FullName, Env:UserName
-        And the settings object's UserName should be Jaykul
-        And the settings object's FullName should be Joel Bennett
+        And the output's UserName should be Jaykul
+        And the output's FullName should be Joel Bennett
 
