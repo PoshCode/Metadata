@@ -10,7 +10,7 @@ Feature: Manifest Read and Write
     @Modules @Import
     Scenario: Read ModuleVersion from a module manifest by default
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -28,7 +28,7 @@ Feature: Manifest Read and Write
 
     Scenario: Read a named value from a module manifest
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -45,7 +45,7 @@ Feature: Manifest Read and Write
 
     Scenario: Read a named value from a module manifest PrivateData
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -64,7 +64,7 @@ Feature: Manifest Read and Write
 
     Scenario: Read the release notes from a module manifest PSData
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -87,7 +87,7 @@ Feature: Manifest Read and Write
 
     Scenario: Read an ambiguously named property from a module manifest
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -114,7 +114,7 @@ Feature: Manifest Read and Write
 
     Scenario: Attempt to read a non-existent value
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -131,7 +131,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module version by default
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -147,7 +147,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module major version
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -163,7 +163,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module minor version
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -179,7 +179,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module minor version when it's 0
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -195,7 +195,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module build version
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -211,7 +211,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module build version when it's 0
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -227,7 +227,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module revision
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -243,7 +243,7 @@ Feature: Manifest Read and Write
 
     Scenario: Update the module revision when the build isn't set
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.
@@ -261,7 +261,7 @@ Feature: Manifest Read and Write
     @Regression
     Scenario: Get Arrays from a metadata file
         Given a module with the name 'ModuleName'
-        And a module manifest named ModuleName.psd1
+        And a metadata file named ModuleName.psd1
             """
             @{
                 # Script module or binary module file associated with this manifest.

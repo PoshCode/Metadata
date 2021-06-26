@@ -148,12 +148,6 @@ Given 'the Metadata module is imported' {
     Import-Module $ModuleBase/Metadata.psd1 -Scope Global
 }
 
-Given 'the manifest module is imported' {
-    param($Table)
-    $ModuleBase = GetModuleBase
-    Remove-Module "Metadata", Manifest
-    Import-Module $ModuleBase/Manifest.psm1 -Scope Global
-}
 Given "a module with(?:\s+\w+ name '(?<name>.+?)'|\s+\w+ the company '(?<company>.+?)'|\s+\w+ the author '(?<author>.+?)')+" {
     param($name, $Company = "", $Author = "")
 
@@ -194,92 +188,6 @@ Given "a module with(?:\s+\w+ name '(?<name>.+?)'|\s+\w+ the company '(?<company
 
     Import-Module $ModulePath/${Name}.psd1
 }
-<# Configuration Path Tests
-
-Then "the user configuration path at load time should (\w+) (.+)$" {
-    param($Comparator, $Path)
-
-    [string[]]$Path = $Path -split "\s*and\s*" | %{ $_.Trim("['`"]") }
-
-    $LocalStoragePath = GetConfigurationPath
-    foreach($PathAssertion in $Path) {
-        $LocalStoragePath -replace "\\", "/" | Should $Comparator $PathAssertion
-    }
-}
-
-Then "the module's user path at load time should (\w+) (.+)$" {
-    param($Comparator, $Path)
-
-    [string[]]$Path = $Path -split "\s*and\s*" | %{ $_.Trim("['`"]") }
-
-    $LocalStoragePath = GetConfigurationPath
-    $LocalStoragePath = $LocalStoragePath -replace "C:[\\\/]etc", "/etc"
-    $LocalStoragePath = $LocalStoragePath -replace "^$([regex]::escape($Home.TrimEnd("/\")))", "~"
-    foreach ($PathAssertion in $Path) {
-        $LocalStoragePath -replace "\\", "/" | Should $Comparator $PathAssertion
-    }
-}
-
-When "the module's (\w+) path should (\w+) (.+)$" {
-    param($Scope, $Comparator, $Path)
-
-    [string[]]$Path = $Path -split "\s*and\s*" | %{ $_.Trim("['`"]") }
-
-    foreach($PathAssertion in $Path) {
-        try {
-            # if you're not an administrator, you're going to get Access ... denied
-            $LocalStoragePath = GetStoragePath -Scope $Scope
-        } catch {
-            # this would make most tests fail, because the folder won't exist
-            $LocalStoragePath = GetStoragePath -Scope $Scope -SkipCreatingFolder
-        }
-
-        # This is because of the mock I wrote to test the linux logic on Windows
-        if(!$IsLinux -and $PathAssertion -match "\^~?/") {
-            $LocalStoragePath = $LocalStoragePath -replace "C:[\\\/]etc","/etc"
-        }
-        # This is just because I want to be able to write ~/ in the paths in tests instead of $Home/
-        if ($PathAssertion -match "\^~?/") {
-            $LocalStoragePath = $LocalStoragePath -replace "^$([regex]::escape($Home.TrimEnd("/\")))","~"
-        }
-        #Write-Host $LocalStoragePath -ForegroundColor Yellow
-        $LocalStoragePath -replace "\\", "/" | Should $Comparator $PathAssertion
-    }
-}
-
-Then "the script's (\w+) path should (\w+) (.+)$" {
-    param($Scope, $Comparator, $Path)
-
-    [string[]]$Path = $Path -split "\s*and\s*" | % { $_.Trim("['`"]") }
-
-    $LocalStoragePath = iex "TestDrive:/${ScriptName}.ps1"
-    foreach ($PathAssertion in $Path) {
-        $LocalStoragePath -replace "\\","/" | Should $Comparator $PathAssertion
-    }
-}
-
-When "the resulting path should (\w+) (.+)$" {
-    param($Comparator, $Path)
-
-    [string[]]$Path = $Path -split "\s*and\s*" | %{ $_.Trim("['`"]") }
-
-    foreach($PathAssertion in $Path) {
-        $folder -replace "\\", "/" | Should $Comparator $PathAssertion
-    }
-}
-
-Given "a script with the name '(.+)' that calls Get-ConfigurationPath with no parameters" {
-    param($name)
-    Set-Content "TestDrive:/${name}.ps1" "Get-ConfigurationPath"
-    $ScriptName = $Name
-}
-
-Given "a script with the name '(?<File>.+)' that calls Get-ConfigurationPath (?:-Name (?<Name>\w*) ?|-Author (?<Author>\w*) ?){2}" {
-    param($File, $Name, $Author)
-    Set-Content "TestDrive:/${File}.ps1" "Get-ConfigurationPath -Name $Name -Author $Author"
-    $ScriptName = $File
-}
-#>
 
 Then "the script should throw an exception$" {
     { $LocalStoragePath = iex "TestDrive:/${ScriptName}.ps1" } | Should throw
@@ -300,7 +208,7 @@ Given "a settings object" {
     $Settings = iex "[PSCustomObject]$hashtable"
 }
 
-When "we update the settings with" {
+When "we update the object with" {
     param($hashtable)
     $Update = if($hashtable) {
         iex $hashtable
@@ -320,7 +228,7 @@ When "we say (?<property>.*) is important and update with" {
     $Settings = $Settings | Update-Object -UpdateObject $Update -Important $property
 }
 
-Given "a (?:settings file|module manifest) named (\S+)(?:(?: in the (?<Scope>\S+) folder)|(?: for version (?<Version>[0-9.]+)))*" {
+Given "a metadata file named (\S+)(?:(?: in the (?<Scope>\S+) folder)|(?: for version (?<Version>[0-9.]+)))*" {
     param($fileName, $hashtable, $Scope = $null, $Version = $null)
 
     if ($Scope -in "current","parent") {
@@ -356,7 +264,7 @@ Given "a (?:settings file|module manifest) named (\S+)(?:(?: in the (?<Scope>\S+
     Set-Content $SettingsFile -Value $hashtable
 }
 
-Then "the output's MyPath should match the file's path" {
+Then "the object's MyPath should match the file's path" {
     $Settings.MyPath | Convert-Path | Should Be (Convert-Path ${SettingsFile})
 }
 
@@ -444,7 +352,7 @@ When "we add a converter for (.*) types" {
     }
 }
 
-When "we convert the settings to metadata" {
+When "we convert the object to metadata" {
     $SettingsMetadata = ConvertTo-Metadata $Settings
 
     # # Write-Debug $SettingsMetadata
@@ -452,7 +360,7 @@ When "we convert the settings to metadata" {
     # Write-Verbose $SettingsMetadata
 }
 
-When "we export to a settings file named (.*)" {
+When "we export to a metadata file named (.*)" {
     param($fileName)
     if(!$ModulePath -or !(Test-Path $ModulePath)) {
         $ModulePath = "TestDrive:/"
@@ -503,7 +411,7 @@ When "the string version should (\w+)\s*(.*)?" {
     $Metadata | Should $operator $data
 }
 
-When "the settings file should (\w+)\s*(.*)?" {
+When "the metadata file should (\w+)\s*(.*)?" {
     param($operator, $data)
     # Normalize line endings, because the module does:
     $data = [regex]::escape(($data -replace "\r?\n","`n")) -replace '\\n','\r?\n'
@@ -514,7 +422,7 @@ When "the settings file should (\w+)\s*(.*)?" {
     }
 }
 
-Given "the settings file does not exist" {
+Given "the metadata file does not exist" {
     #
     if(!$ModulePath -or !(Test-Path $ModulePath)) {
         $ModulePath = "TestDrive:/"
@@ -599,7 +507,7 @@ Then "the output object should have (.*) in the PSTypeNames" {
     $Settings.PSTypeNames -eq $Type | Should Be $Type
 }
 
-Then "the (?:settings|output)'s (.*) should (be of type|be) (.*)" {
+Then "the object's (.*) should (be of type|be) (.*)" {
     param([String]$Parameter, [String]$operator, $Expected)
     $Value = $Settings
     Set-StrictMode -Off
@@ -748,7 +656,7 @@ Then "the string result should be \`"(.*)\`"" {
     "$Result" | Should Be $value
 }
 
-Then "a settings file named (\S+) should exist(?:(?: in the (?<Scope>\S+) folder)|(?: for version (?<Version>[0-9.]+)))*" {
+Then "a metadata file named (\S+) should exist(?:(?: in the (?<Scope>\S+) folder)|(?: for version (?<Version>[0-9.]+)))*" {
     param($fileName, $hashtable, $Scope = $null, $Version = $null)
 
     if($Scope -and $Version) {
@@ -767,7 +675,7 @@ Then "a settings file named (\S+) should exist(?:(?: in the (?<Scope>\S+) folder
 }
 
 Given "a passthru command '(?<Command>[A-Z][a-z]+-[A-Z][a-z]+)' with (?<Parameters>.*) parameters" {
-     param($Command, $Parameters)
+    param($Command, $Parameters)
 
     [string[]]$Parameters = $Parameters -split "\s*and\s*" | % { $_.Trim("['`"]") }
 

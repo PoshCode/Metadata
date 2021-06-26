@@ -1,7 +1,7 @@
 # Generate ScriptAnalyzer.feature
 $Path = GetModuleBase
 
-# The name (or path) of a settings file to be used.
+# The name (or path) of a metadata file to be used.
 [string]$Settings = "PSScriptAnalyzerSettings.psd1"
 Write-Verbose "Resolve settings '$Settings'"
 if (Test-Path $Settings) {
