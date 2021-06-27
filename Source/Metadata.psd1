@@ -4,7 +4,7 @@
 ModuleToProcess = 'Metadata.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.4.0'
+ModuleVersion = '1.4.4'
 
 # ID used to uniquely identify this module
 GUID = 'c7505d40-646d-46b5-a440-8a81791c5d23'

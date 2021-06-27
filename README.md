@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/poshcode/Configuration/_apis/build/status/Configuration?branchName=master)](https://dev.azure.com/poshcode/Configuration/_build/latest?definitionId=2&branchName=master)
+[![Build on push](https://github.com/PoshCode/Metadata/actions/workflows/build.yml/badge.svg)](https://github.com/PoshCode/Metadata/actions/workflows/build.yml)
 
 # The Metadata Module
 
