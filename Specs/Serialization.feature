@@ -54,11 +54,33 @@ Feature: Serialize Hashtables or Custom Objects
         When we convert the object to metadata
         Then the string version should match 'TestCase = \d+'
 
+    @Deserialization
+    Scenario: Should be able to deserialize core types:
+        Given a hashtable with a String in it
+        When we round-trip the object through metadata
+        Then the object's TestCase should be of type String
+
+        Given a hashtable with a Number in it
+        When we round-trip the object through metadata
+        Then the object's TestCase should be of type Int32
+
+        Given a hashtable with a Boolean in it
+        When we round-trip the object through metadata
+        Then the object's TestCase should be of type Boolean
+        Then the object's TestCase should be $True
+
     @Serialization
-    Scenario: Should be able to serialize a array
+    Scenario: Should be able to serialize an array
         Given a hashtable with an Array in it
         When we convert the object to metadata
         Then the string version should match 'TestCase = ([^,]*,)+[^,]*'
+
+    @Deserialization
+    Scenario: Should be able to deserialize an array:
+        Given a hashtable with an Array in it
+        When we round-trip the object through metadata
+        Then the object's TestCase should be an array
+        Then the object's TestCase should be of type string
 
     @Serialization
     Scenario: Should be able to serialize nested hashtables
@@ -541,6 +563,27 @@ Feature: Serialize Hashtables or Custom Objects
         And we define FullName = Joel Bennett
         And we define Env:UserName = Jaykul
         When we import the file allowing variables FullName, Env:UserName
-        And the object's UserName should be Jaykul
+        Then the object's UserName should be Jaykul
         And the object's FullName should be Joel Bennett
+
+    @Serialization
+    Scenario: Supports the default built-in constants
+        Given a metadata file named Configuration.psd1
+            """
+            @{
+                True = $True
+                False = $False
+                PSCulture = $PSCulture
+                PSUICulture = $PSUICulture
+                Null = $null
+            }
+            """
+        When we import the file to an object
+        Then the object's True should be $true
+        Then the object's True should be of type bool
+        Then the object's False should be $false
+        Then the object's False should be of type bool
+        Then the object's PSCulture should be $PSCulture
+        Then the object's PSUICulture should be $PSUICulture
+        Then the object's Null should be null
 
