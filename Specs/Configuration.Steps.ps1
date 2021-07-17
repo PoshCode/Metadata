@@ -240,14 +240,14 @@ When "a hashtable with an? (.+) in it" {
             $Settings.TestCase = "Test"
         }
         "Number" {
-            $Settings.OneTestCase = 42
+            $Settings.TestCase = 42
             $Settings.TwoTestCase = 42.9
         }
         "Array"  {
             $Settings.TestCase = "One", "Two", "Three"
         }
         "Boolean"  {
-            $Settings.OneTestCase = $True
+            $Settings.TestCase = $True
             $Settings.TwoTestCase = $False
         }
         "DateTime" {
@@ -289,6 +289,10 @@ When "a hashtable with an? (.+) in it" {
     }
 }
 
+Then "the object's TestCase should be an array" {
+    $Settings.TestCase -is [array] | Should -Be $True
+}
+
 When "we add a converter for (.*) types" {
     param($Type)
     switch ($Type) {
@@ -313,6 +317,10 @@ When "we convert the object to metadata" {
     # # Write-Debug $SettingsMetadata
     $Wide = $Host.UI.RawUI.WindowSize.Width
     # Write-Verbose $SettingsMetadata
+}
+
+When "we round-trip the object through metadata" {
+    $Settings = ConvertFrom-Metadata (ConvertTo-Metadata $Settings)
 }
 
 When "we export to a metadata file named (.*)" {

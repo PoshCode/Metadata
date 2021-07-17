@@ -150,7 +150,7 @@ function ConvertFrom-Metadata {
         # Work around PowerShell rules about magic variables
         # Change all the "ValidVariables" to use names like __Metadata__OriginalName__
         # Later, we'll try to make sure these are all set!
-        if (($UsedVariables = $Tokens | Where-Object { ("Variable" -eq $_.Kind) -and ($_.Name -in $ValidVariables) })) {
+        if (($UsedVariables = $Tokens | Where-Object { ("Variable" -eq $_.Kind) -and ($_.Name -in $ValidVariables) -and ($_.Name -notin "PSCulture", "PSUICulture", "True", "False", "Null") })) {
             # Write-Debug "ConvertFrom-Metadata: Replacing $($UsedVariables.Name -join ', ')"
             if (($extents = @( $UsedVariables | ForEach-Object { $_.Extent | Add-Member NoteProperty Name $_.Name -PassThru } ))) {
                 $ScriptContent = $Ast.ToString()
