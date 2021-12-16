@@ -42,7 +42,7 @@ PrivateData   = @{
 
         # Release notes for this particular version of the module
         ReleaseNotes = '
-        - Extracted Metadata from Configuration for the first time
+        Fixes PSObject serialization bug
         '
     }
 }
