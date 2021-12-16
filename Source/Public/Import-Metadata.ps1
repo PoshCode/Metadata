@@ -1,14 +1,15 @@
 function Import-Metadata {
     <#
       .Synopsis
-         Creates a data object from the items in a Metadata file (e.g. a .psd1)
+        Creates a data object from the items in a Metadata file (e.g. a .psd1)
       .Description
-         Serves as a wrapper for ConvertFrom-Metadata to explicitly support importing from files
+        Serves as a wrapper for ConvertFrom-Metadata to explicitly support importing from files
       .Example
-         $data = Import-Metadata .\Configuration.psd1 -Ordered
+        $data = Import-Metadata .\Configuration.psd1 -Ordered
 
-         Convert a module manifest into a hashtable of properties for introspection, preserving the order in the file
-   #>
+        Convert a module manifest into a hashtable of properties for introspection, preserving the order in the file
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
     [CmdletBinding()]
     param(
         # The path to the metadata (.psd1) file to import

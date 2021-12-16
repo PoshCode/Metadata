@@ -11,6 +11,7 @@ function Get-Metadata {
     #   Get-Metadata .\Configuration.psd1 ReleaseNotes
     #
     #   Returns the release notes!
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
     [Alias("Get-ManifestValue")]
     [CmdletBinding()]
     param(

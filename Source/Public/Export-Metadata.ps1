@@ -16,6 +16,7 @@ function Export-Metadata {
             Export a configuration object (or hashtable) to the default Configuration.psd1 file for a module
             the metadata module uses Configuration.psd1 as it's default config file.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")] # Because PSSCriptAnalyzer team refuses to listen to reason. See bugs:  #194 #283 #521 #608
     [CmdletBinding(SupportsShouldProcess)]
     param(

@@ -28,6 +28,7 @@ function Update-Metadata {
     [Alias("Update-Manifest")]
     # Because PSSCriptAnalyzer team refuses to listen to reason. See bugs:  #194 #283 #521 #608
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
     [CmdletBinding(SupportsShouldProcess)]
     param(
         # The path to the module manifest file -- must be a .psd1 file

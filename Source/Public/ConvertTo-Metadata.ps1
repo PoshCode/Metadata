@@ -36,6 +36,7 @@ function ConvertTo-Metadata {
     #  Note that this serialization would require a "DateTimeOffset" function to exist in order to deserialize properly.
     #
     #  See also the third example on ConvertFrom-Metadata and Add-MetadataConverter.
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
     [OutputType([string])]
     [CmdletBinding()]
     param(
@@ -77,9 +78,9 @@ function ConvertTo-Metadata {
             "@{{`n$t{0}`n}}" -f ($(
                     ForEach ($key in @($InputObject.Keys)) {
                         if ("$key" -match '^([A-Za-z_]\w*|-?\d+\.?\d*)$') {
-                            "$key = " + (ConvertTo-Metadata $InputObject.($key) -AsHashtable:$AsHashtable)
+                            "$key = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         } else {
-                            "'$key' = " + (ConvertTo-Metadata $InputObject.($key) -AsHashtable:$AsHashtable)
+                            "'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         }
                     }) -split "`n" -join "`n$t")
         } elseif ($InputObject -is [System.Collections.IEnumerable]) {
@@ -96,9 +97,9 @@ function ConvertTo-Metadata {
                 }) -f ($(
                     ForEach ($key in $InputObject | Get-Member -MemberType Properties | Select-Object -ExpandProperty Name) {
                         if ("$key" -match '^([A-Za-z_]\w*|-?\d+\.?\d*)$') {
-                            "$key = " + (ConvertTo-Metadata $InputObject.$key -AsHashtable:$AsHashtable)
+                            "$key = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         } else {
-                            "'$key' = " + (ConvertTo-Metadata $InputObject.$key -AsHashtable:$AsHashtable)
+                            "'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         }
                     }
                 ) -split "`n" -join "`n$t")

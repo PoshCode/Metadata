@@ -31,6 +31,7 @@ function ConvertFrom-Metadata {
 
         See also the third example on ConvertTo-Metadata and Add-MetadataConverter
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
     [CmdletBinding()]
     param(
         # The metadata text (or a path to a metadata file)
