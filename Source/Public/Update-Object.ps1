@@ -69,19 +69,6 @@ function Update-Object {
                     Select-Object -ExpandProperty Name)
         }
 
-        function TestKey {
-            [OutputType([bool])]
-            [CmdletBinding()]
-            param($InputObject, $Key)
-            [bool]$(
-                if ($InputObject -is [System.Collections.IDictionary]) {
-                    $InputObject.ContainsKey($Key)
-                } else {
-                    Get-Member -InputObject $InputObject -Name $Key
-                }
-            )
-        }
-
         # # Write-Debug "Keys: $Keys"
         foreach ($key in $Keys) {
             if ($key -notin $ImportantInputProperties -or -not (TestKey -InputObject $InputObject -Key $Key) ) {
