@@ -7,3 +7,4 @@ node_modules/
 
 results.xml
 coverage.xml
+Specs/ScriptAnalyzer.feature
