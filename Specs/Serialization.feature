@@ -587,3 +587,32 @@ Feature: Serialize Hashtables or Custom Objects
         Then the object's PSUICulture should be $PSUICulture
         Then the object's Null should be null
 
+    @Serialization @Regression
+    Scenario: PSObjects should be serialized with 'PSObject'
+        Given a settings object
+            """
+            @{
+                UserName = 'Joel'
+                Age = 42
+                FullName = 'Joel Bennett'
+            }
+            """
+        When we convert the object to metadata
+        Then the string version should match "PSObject @{"
+        And the string version should match "UserName = 'Joel'"
+        And the string version should match "Age = 42"
+        And the string version should match "FullName = 'Joel Bennett'"
+
+    @Serialization @Regression
+    Scenario: PSObjects should be allowed weird characters in properties
+        Given a settings object
+            """
+            @{
+                "O'Connor" = $true
+                Age = 42
+            }
+            """
+        When we convert the object to metadata
+        Then the string version should match "PSObject @{"
+        And the string version should match "'O''Connor' = \`$true"
+        And the string version should match "Age = 42"
