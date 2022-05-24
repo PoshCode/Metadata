@@ -84,9 +84,9 @@ function ConvertTo-Metadata {
                         } else {
                             "'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         }
-                    }) -split "`n" -join "`n$t")
+                    }) -split "`n" -join "`n")
         } elseif ($InputObject -is [System.Collections.IEnumerable]) {
-            "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ","))"
+            "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ",`n"))"
         } elseif($InputObject -is [System.Management.Automation.ScriptBlock]) {
             # Escape single-quotes by doubling them:
             "(ScriptBlock '{0}')" -f ("$_" -replace "'", "''")
@@ -104,7 +104,7 @@ function ConvertTo-Metadata {
                             "'$($key -replace "'","''")' = " + (ConvertTo-Metadata $InputObject.($key) -AsHashtable:$AsHashtable)
                         }
                     }
-                ) -split "`n" -join "`n$t")
+                ) -split "`n" -join "`n")
         } elseif ($MetadataSerializers.ContainsKey($InputObject.GetType())) {
             $Str = ForEach-Object $MetadataSerializers.($InputObject.GetType()) -InputObject $InputObject
 
