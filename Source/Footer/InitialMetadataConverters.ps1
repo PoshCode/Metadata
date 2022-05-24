@@ -47,7 +47,8 @@ Add-MetadataConverter @{
     "PSCredential"   = (Get-Command PSCredentialMetadataConverter).ScriptBlock
     "FromPsMetadata" = {
         $TypeName, $Args = $Args
-        $Output = ([Type]$TypeName)::new()
+        # Can't construct a PowerLine.Cap with ([Type]$TypeName)::new()
+        $Output = New-Object $TypeName
         $Output.FromPsMetadata($Args)
         $Output
     }
