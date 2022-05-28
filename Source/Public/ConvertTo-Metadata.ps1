@@ -37,6 +37,7 @@ function ConvertTo-Metadata {
     #
     #  See also the third example on ConvertFrom-Metadata and Add-MetadataConverter.
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
+    [Alias('ToMetadata')]
     [OutputType([string])]
     [CmdletBinding()]
     param(
@@ -63,16 +64,30 @@ function ConvertTo-Metadata {
     process {
         if ($Null -eq $InputObject) {
             '""'
-        } elseif ($InputObject -is [IPsMetadataSerializable] -or
-            ($InputObject.ToPsMetadata -as [Func[String]] -and $InputObject.FromPsMetadata -as [Action[String]]) -or
-            ($InputObject.psobject.BaseObject.ToPsMetadata -as [Func[String]] -and $InputObject.psobject.BaseObject.FromPsMetadata -as [Action[String]])) {
-            "(FromPsMetadata {0} @'`n{1}`n'@)" -f $InputObject.GetType().FullName, $InputObject.ToPsMetadata()
-        } elseif ( $InputObject -is [Int16] -or
-                   $InputObject -is [Int32] -or
-                   $InputObject -is [Int64] -or
-                   $InputObject -is [Double] -or
-                   $InputObject -is [Decimal] -or
-                   $InputObject -is [Byte] ) {
+            return
+        }
+
+        if ($InputObject -is [IPsMetadataSerializable] -or
+            ($InputObject.ToPsMetadata -is [System.Management.Automation.PSMethod] -and
+            $InputObject.FromPsMetadata -is [System.Management.Automation.PSMethod])) {
+            try {
+                $result = "(ConvertFrom-Metadata @'`n{1}`n'@ -As {0})" -f $InputObject.GetType().FullName, $InputObject.ToPsMetadata()
+                if ($result -is [string]) {
+                    $result
+                    return
+                }
+            } catch {
+                <# The way we handle this is to #>
+                Write-Warning "InputObject of type $($InputObject.GetType().FullName) looks IMetadataSerializable, but threw an exception."
+            }
+        }
+
+        if ($InputObject -is [Int16] -or
+            $InputObject -is [Int32] -or
+            $InputObject -is [Int64] -or
+            $InputObject -is [Double] -or
+            $InputObject -is [Decimal] -or
+            $InputObject -is [Byte] ) {
             "$InputObject"
         } elseif ($InputObject -is [String]) {
             "'{0}'" -f $InputObject.ToString().Replace("'", "''")
@@ -86,7 +101,7 @@ function ConvertTo-Metadata {
                         }
                     }) -split "`n" -join "`n")
         } elseif ($InputObject -is [System.Collections.IEnumerable]) {
-            "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ",`n"))"
+            "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ","))"
         } elseif($InputObject -is [System.Management.Automation.ScriptBlock]) {
             # Escape single-quotes by doubling them:
             "(ScriptBlock '{0}')" -f ("$_" -replace "'", "''")
