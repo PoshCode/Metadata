@@ -52,7 +52,11 @@ function ConvertTo-Metadata {
         [Hashtable]$Converters = @{}
     )
     begin {
-        $t = "  "
+        if ($t -is [string] -and [string]::IsNullOrWhiteSpace($t)) {
+            $t += "  "
+        } else {
+            $t = "  "
+        }
         $Script:OriginalMetadataSerializers = $Script:MetadataSerializers.Clone()
         $Script:OriginalMetadataDeserializers = $Script:MetadataDeserializers.Clone()
         Add-MetadataConverter $Converters
@@ -92,12 +96,12 @@ function ConvertTo-Metadata {
         } elseif ($InputObject -is [String]) {
             "'{0}'" -f $InputObject.ToString().Replace("'", "''")
         } elseif ($InputObject -is [Collections.IDictionary]) {
-            "@{{`n$t{0}`n}}" -f ($(
+            "@{{`n{0}`n$($t -replace "  $")}}" -f ($(
                     ForEach ($key in @($InputObject.Keys)) {
                         if ("$key" -match '^([A-Za-z_]\w*|-?\d+\.?\d*)$') {
-                            "$key = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
+                            "$t$key = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         } else {
-                            "'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
+                            "$t'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         }
                     }) -split "`n" -join "`n")
         } elseif ($InputObject -is [System.Collections.IEnumerable]) {

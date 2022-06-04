@@ -20,7 +20,23 @@ Feature: Serialize Hashtables or Custom Objects
               BackgroundColor = 'Black'
             }
             """
-
+    @Serialization
+    Scenario: Serialize nested hashtables to string
+        Given a hashtable
+            """
+            @{ UserName = "Joel"; Permission = @{ Role = "Administrator"; Since = (Get-Date 2000/1/1)}}
+            """
+        When we convert the object to metadata
+        Then the string version should be
+            """
+            @{
+              UserName = 'Joel'
+              Permission = @{
+                Role = 'Administrator'
+                Since = (DateTime '2000-01-01T00:00:00.0000000')
+              }
+            }
+            """
     @Serialization @ConsoleColor
     Scenario: Serialize a ConsoleColor to string
         Given a hashtable
