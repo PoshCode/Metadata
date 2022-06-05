@@ -24,7 +24,7 @@ Feature: Serialize Hashtables or Custom Objects
     Scenario: Serialize nested hashtables to string
         Given a hashtable
             """
-            @{ UserName = "Joel"; Permission = @{ Role = "Administrator"; Since = (Get-Date 2000/1/1)}}
+            @{ UserName = "Joel"; Permission = [ordered]@{ Role = "Administrator"; Since = (Get-Date 2000/1/1)}}
             """
         When we convert the object to metadata
         Then the string version should be
