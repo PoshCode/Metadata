@@ -37,6 +37,7 @@ function ConvertTo-Metadata {
     #
     #  See also the third example on ConvertFrom-Metadata and Add-MetadataConverter.
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
+    [Alias('ToMetadata')]
     [OutputType([string])]
     [CmdletBinding()]
     param(
@@ -51,7 +52,11 @@ function ConvertTo-Metadata {
         [Hashtable]$Converters = @{}
     )
     begin {
-        $t = "  "
+        if ($t -is [string] -and [string]::IsNullOrWhiteSpace($t)) {
+            $t += "  "
+        } else {
+            $t = "  "
+        }
         $Script:OriginalMetadataSerializers = $Script:MetadataSerializers.Clone()
         $Script:OriginalMetadataDeserializers = $Script:MetadataDeserializers.Clone()
         Add-MetadataConverter $Converters
@@ -63,26 +68,42 @@ function ConvertTo-Metadata {
     process {
         if ($Null -eq $InputObject) {
             '""'
-        } elseif ($InputObject -is [IPsMetadataSerializable] -or ($InputObject.ToPsMetadata -as [Func[String]] -and $InputObject.FromPsMetasta -as [Action[String]])) {
-            "(FromPsMetadata {0} @'`n{1}`n'@)" -f $InputObject.GetType().FullName, $InputObject.ToMetadata()
-        } elseif ( $InputObject -is [Int16] -or
-                   $InputObject -is [Int32] -or
-                   $InputObject -is [Int64] -or
-                   $InputObject -is [Double] -or
-                   $InputObject -is [Decimal] -or
-                   $InputObject -is [Byte] ) {
+            return
+        }
+
+        if ($InputObject -is [IPsMetadataSerializable] -or
+            ($InputObject.ToPsMetadata -is [System.Management.Automation.PSMethod] -and
+            $InputObject.FromPsMetadata -is [System.Management.Automation.PSMethod])) {
+            try {
+                $result = "(ConvertFrom-Metadata @'`n{1}`n'@ -As {0})" -f $InputObject.GetType().FullName, $InputObject.ToPsMetadata()
+                if ($result -is [string]) {
+                    $result
+                    return
+                }
+            } catch {
+                <# The way we handle this is to #>
+                Write-Warning "InputObject of type $($InputObject.GetType().FullName) looks IMetadataSerializable, but threw an exception."
+            }
+        }
+
+        if ($InputObject -is [Int16] -or
+            $InputObject -is [Int32] -or
+            $InputObject -is [Int64] -or
+            $InputObject -is [Double] -or
+            $InputObject -is [Decimal] -or
+            $InputObject -is [Byte] ) {
             "$InputObject"
         } elseif ($InputObject -is [String]) {
             "'{0}'" -f $InputObject.ToString().Replace("'", "''")
         } elseif ($InputObject -is [Collections.IDictionary]) {
-            "@{{`n$t{0}`n}}" -f ($(
+            "@{{`n{0}`n$($t -replace "  $")}}" -f ($(
                     ForEach ($key in @($InputObject.Keys)) {
                         if ("$key" -match '^([A-Za-z_]\w*|-?\d+\.?\d*)$') {
-                            "$key = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
+                            "$t$key = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         } else {
-                            "'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
+                            "$t'$key' = " + (ConvertTo-Metadata $InputObject[$key] -AsHashtable:$AsHashtable)
                         }
-                    }) -split "`n" -join "`n$t")
+                    }) -split "`n" -join "`n")
         } elseif ($InputObject -is [System.Collections.IEnumerable]) {
             "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ","))"
         } elseif($InputObject -is [System.Management.Automation.ScriptBlock]) {
@@ -102,7 +123,7 @@ function ConvertTo-Metadata {
                             "'$($key -replace "'","''")' = " + (ConvertTo-Metadata $InputObject.($key) -AsHashtable:$AsHashtable)
                         }
                     }
-                ) -split "`n" -join "`n$t")
+                ) -split "`n" -join "`n")
         } elseif ($MetadataSerializers.ContainsKey($InputObject.GetType())) {
             $Str = ForEach-Object $MetadataSerializers.($InputObject.GetType()) -InputObject $InputObject
 

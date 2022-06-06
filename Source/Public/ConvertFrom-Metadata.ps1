@@ -32,12 +32,18 @@ function ConvertFrom-Metadata {
         See also the third example on ConvertTo-Metadata and Add-MetadataConverter
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Too late to call it Metadatum, LOL")]
-    [CmdletBinding()]
+    [Alias('FromMetadata')]
+    [CmdletBinding(DefaultParameterSetName = "Legacy")]
     param(
         # The metadata text (or a path to a metadata file)
-        [Parameter(ValueFromPipelineByPropertyName = "True", Position = 0)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipelineByPropertyName = "True")]
         [Alias("PSPath")]
         $InputObject,
+
+        # The Type that the InputObject represents
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = "FromPsMetadata")]
+        [Alias("As")]
+        [Type]$Type,
 
         # A hashtable of MetadataConverters (same as with Add-MetadataConverter)
         [Hashtable]$Converters = @{},
@@ -63,12 +69,15 @@ function ConvertFrom-Metadata {
     begin {
         $OriginalMetadataSerializers = $Script:MetadataSerializers.Clone()
         $OriginalMetadataDeserializers = $Script:MetadataDeserializers.Clone()
-        Add-MetadataConverter $Converters
+        if ($Converters.Count) {
+            Add-MetadataConverter $Converters
+        }
         [string[]]$ValidCommands = @(
-            "ConvertFrom-StringData", "Join-Path", "Split-Path", "ConvertTo-SecureString"
+            "ConvertFrom-StringData", "ConvertFrom-Metadata", "Join-Path", "Split-Path", "ConvertTo-SecureString"
         ) + @($MetadataDeserializers.Keys)
         [string[]]$ValidVariables = $AllowedVariables + @(
-            "PSScriptRoot", "ScriptRoot", "PoshCodeModuleRoot", "PSCulture", "PSUICulture", "True", "False", "Null")
+            "PSScriptRoot", "ScriptRoot", "PoshCodeModuleRoot", "PSCulture", "PSUICulture", "True", "False", "Null"
+        )
 
         if (!$PSVariable) {
             $PSVariable = $PSCmdlet.SessionState.PSVariable
@@ -81,6 +90,23 @@ function ConvertFrom-Metadata {
     process {
         $ErrorActionPreference = "Stop"
         $Tokens = $Null; $ParseErrors = $Null
+        # Write-Debug "ParameterSet: $($PSCmdlet.ParameterSetName) $($PSBoundParameters | Format-Table | Out-String)"
+        if ($Type) {
+            try {
+                if ($Type.GetMethod("FromPsMetadata", [string])) {
+                    $Output = New-Object $Type
+                    $Output.FromPsMetadata($InputObject)
+                    $Output
+                    return
+                } else {
+                    $Output = New-Object $Type -Property $InputObject
+                    return
+                }
+            } catch {
+                # I almost want to suppress this and just try the fallback methods
+                Write-Warning "$($Type.FullName) failed using FromPsMetadata"
+            }
+        }
 
         if (Test-PSVersion -lt "3.0") {
             # Write-Debug "ConvertFrom-Metadata: Using Import-LocalizedData to support PowerShell $($PSVersionTable.PSVersion)"
@@ -168,14 +194,14 @@ function ConvertFrom-Metadata {
                                                             ).Insert($VariableExtent.StartOffset, $VariableName)
                 }
             }
-            Write-Debug "ConvertFrom-Metadata: Replaced $($UsedVariables.Name -join ' and ') in metadata: $ScriptContent"
+            # Write-Debug "ConvertFrom-Metadata: Replaced $($UsedVariables.Name -join ' and ') in metadata: $ScriptContent"
             $AST = [System.Management.Automation.Language.Parser]::ParseInput($ScriptContent, [ref]$Tokens, [ref]$ParseErrors)
         }
 
         $Script = $AST.GetScriptBlock()
         try {
             [string[]]$PrivateVariables = $ValidVariables -replace "^.*$", '__Metadata__$0__'
-            Write-Debug "ConvertFrom-Metadata: Validating metadata: $Script against $PrivateVariables"
+            # Write-Debug "ConvertFrom-Metadata: Validating metadata: $Script against $PrivateVariables"
             $Script.CheckRestrictedLanguage( $ValidCommands, $PrivateVariables, $true )
         } catch {
             ThrowError -Exception $_.Exception.InnerException -ErrorId "Metadata Error" -Category "InvalidData" -TargetObject $Script
@@ -190,7 +216,7 @@ function ConvertFrom-Metadata {
             } elseif (!($Value = $PSVariable.GetValue($Name))) {
                 $Value = "`${$Name}"
             }
-            Write-Debug "ConvertFrom-Metadata: Setting __Metadata__${Name}__ = $Value"
+            # Write-Debug "ConvertFrom-Metadata: Setting __Metadata__${Name}__ = $Value"
             Set-Variable "__Metadata__${Name}__" $Value
         }
 
