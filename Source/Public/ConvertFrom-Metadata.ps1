@@ -59,7 +59,7 @@ function ConvertFrom-Metadata {
 
         # Allows extending the valid variables which are allowed to be referenced in metadata
         # BEWARE: This exposes the value of these variables in your context to the caller
-        # You ware reponsible to only allow variables which you know are safe to share
+        # You are reponsible to only allow variables which you know are safe to share
         [String[]]$AllowedVariables,
 
         # You should not pass this.
