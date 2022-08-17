@@ -319,6 +319,15 @@ When "we convert the object to metadata" {
     # Write-Verbose $SettingsMetadata
 }
 
+
+When "we convert the object to metadata by piping it" {
+    $SettingsMetadata = $Settings | ConvertTo-Metadata
+
+    # # Write-Debug $SettingsMetadata
+    $Wide = $Host.UI.RawUI.WindowSize.Width
+    # Write-Verbose $SettingsMetadata
+}
+
 When "we round-trip the object through metadata" {
     $Settings = ConvertFrom-Metadata (ConvertTo-Metadata $Settings)
 }

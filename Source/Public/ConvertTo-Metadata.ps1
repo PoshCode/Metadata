@@ -53,7 +53,8 @@ function ConvertTo-Metadata {
     )
     begin {
         if ($t -is [string] -and [string]::IsNullOrWhiteSpace($t)) {
-            $t += "  "
+            # DO NOT USE += BECAUSE POWERSHELL WILL OPTIMIZE THIS AWAY
+            $t = $t + "  "
         } else {
             $t = "  "
         }
@@ -108,7 +109,7 @@ function ConvertTo-Metadata {
             "@($($(ForEach($item in @($InputObject)) { $item | ConvertTo-Metadata -AsHashtable:$AsHashtable}) -join ","))"
         } elseif($InputObject -is [System.Management.Automation.ScriptBlock]) {
             # Escape single-quotes by doubling them:
-            "(ScriptBlock '{0}')" -f ($InputObject -replace "'", "''")
+            "(ScriptBlock '{0}')" -f ("$InputObject" -replace "'", "''")
         } elseif ($InputObject.GetType().FullName -eq 'System.Management.Automation.PSCustomObject') {
             # NOTE: we can't put [ordered] here because we need support for PS v2, but it's ok, because we put it in at parse-time
             $(if ($AsHashtable) {

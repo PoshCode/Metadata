@@ -16,11 +16,14 @@ function Get-Metadata {
     [CmdletBinding()]
     param(
         # The path to the module manifest file
-        [Parameter(ValueFromPipelineByPropertyName = "True", Position = 0)]
+        [Parameter(ValueFromPipelineByPropertyName = "True", Position = 0, Mandatory)]
         [Alias("PSPath")]
-        [ValidateScript( { if ([IO.Path]::GetExtension($_) -ne ".psd1") {
-                    throw "Path must point to a .psd1 file"
-                } $true })]
+        [ValidateScript({
+            if ([IO.Path]::GetExtension($_) -ne ".psd1") {
+                throw "Path must point to a .psd1 file"
+            }
+            $true
+        })]
         [string]$Path,
 
         # The property (or dotted property path) to be read from the manifest.
@@ -36,7 +39,7 @@ function Get-Metadata {
         if (!(Test-Path $Path)) {
             WriteError -ExceptionType System.Management.Automation.ItemNotFoundException `
                 -Message "Can't find file $Path" `
-                -ErrorId "PathNotFound,Metadata\Import-Metadata" `
+                -ErrorId "PathNotFound,Metadata\Get-Metadata" `
                 -Category "ObjectNotFound"
             return
         }

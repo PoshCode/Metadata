@@ -20,7 +20,7 @@ if (-not $Semver -and (Get-Command gitversion -ErrorAction Ignore)) {
 }
 
 try {
-    Build-Module @PSBoundParameters -Target CleanBuild
+    Build-Module @PSBoundParameters -Target CleanBuild -Passthru
 } finally {
     Pop-Location -StackName BuildTestStack
 }
