@@ -537,7 +537,13 @@ Feature: Serialize Hashtables or Custom Objects
     Scenario Outline: Should be able to serialize ScriptBlocks
         Given a hashtable with a ScriptBlock in it
         When we convert the object to metadata
-        Then the string version should match "TestCase = \(?ScriptBlock '"
+        Then the string version should match "TestCase = \(?ScriptBlock '[^']+'"
+
+    @Serialization @ScriptBlock
+    Scenario Outline: Should be able to serialize ScriptBlocks by piping
+        Given a hashtable with a ScriptBlock in it
+        When we convert the object to metadata by piping it
+        Then the string version should match "TestCase = \(?ScriptBlock '[^']+'"
 
     @Serialization
     Scenario Outline: Should serialize Switch statements as booleans
